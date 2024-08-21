@@ -57,7 +57,6 @@ class LpiqeReconstructionExecutor:
         :return: nothing.
         """
         self.__repr.image_entry(image)
-        meas_nr = int(np.log2(self.__im_size[0])+np.log2(self.__im_size[0]))+1
         self.__im_orig = self.__repr.original_image[0]
         self.__q_circ = self.__ex.homogeneous_superposition(self.__im_size)
         self.__q_circ = self.__ex.unitary_operator(self.__q_circ, self.__repr.operator_matrix[0])
@@ -65,7 +64,12 @@ class LpiqeReconstructionExecutor:
         if self.__repr.operator_type is ot.TP_UC_ANCILLA_RIGHT or self.__repr.operator_type is ot.TP_ANCILLA_RIGHT:
             q_nr = self.__q_count - 1
         self.__q_circ = self.__ex.set_hgate(self.__q_circ, q_nr)
-        self.__q_circ = self.__ex.define_measurement(self.__q_circ, range(0, meas_nr), range(0, meas_nr))
+        # self.__q_circ = self.__ex.define_measurement(self.__q_circ, range(0, meas_nr), range(0, meas_nr))
+
+    def define_measurement_ext(self, circuit):
+        meas_nr = int(np.log2(self.__im_size[0])+np.log2(self.__im_size[0]))+1
+        circuit = self.__ex.define_measurement(circuit, range(0, meas_nr), range(0, meas_nr))
+
 
     def execute(self, shots, print_info=True, print_recon=False):
         """

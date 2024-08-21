@@ -8,7 +8,7 @@ from copy import deepcopy
 from LPIQE.src.LPIQE_reconstruction_executor import  LpiqeReconstructionExecutor
 from LPIQE.src.LPIQE_representation import  LpiqeRepresentation
 from scipy.interpolate import interp1d
-from qiskit import transpile, execute
+from qiskit import transpile
 
 import numpy as np
 
@@ -58,7 +58,7 @@ class PDUFunctionCreator:
             tc = transpile(self.__lpiqe_executor.circuit, self.__backend)
             self.__transpiled_circuits.append(tc)
         
-        job = execute(self.__transpiled_circuits, self.__backend, shots=self.__shots)
+        job = self.__backend.run(self.__transpiled_circuits, shots=self.__shots)
         result = job.result()
         counts = result.get_counts()
 

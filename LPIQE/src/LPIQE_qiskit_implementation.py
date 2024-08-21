@@ -1,7 +1,9 @@
 from typing import Any, Tuple
 import numpy as np
-from qiskit import IBMQ, QuantumCircuit, QuantumRegister, ClassicalRegister, transpile, execute
+from qiskit import QuantumCircuit, QuantumRegister, ClassicalRegister, transpile
 from qiskit.quantum_info import Operator
+from qiskit_ibm_runtime import QiskitRuntimeService
+from qiskit_ibm_provider import IBMProvider
 
 from LPIQE.src.LPIQE_implementation import ILpqieImplementation
 
@@ -29,10 +31,24 @@ class LpiqeQiskit(ILpqieImplementation):
         #     '6a780c166609fa9e4de81bb085725b615135a37caf29e4fff82e9d3e3ba864662469ab94fcaa8165e03318df4aa3887b98799b46b7d5979941524a767a9c0f3b',
         #     overwrite=True)
         if parameters[0]:
-            IBMQ.save_account(parameters[1], overwrite=True)
-        IBMQ.load_account()  # Load account from disk
+            # QiskitRuntimeService.save_account(
+            #     channel="ibm_quantum",
+            #     token=parameters[1],
+            #     set_as_default=True,
+            #     # Use `overwrite=True` if you're updating your token.
+            #     overwrite=True,
+            # )
+            instance_my = parameters[2] + "/" + parameters[3] + "/" + parameters[4]
+            IBMProvider.save_account(token=parameters[1], overwrite=True, instance=instance_my) 
+            # IBMQ.save_account(parameters[1], overwrite=True)
+        # IBMProvider.load_account()  # Load account from disk
+        # instance_my = parameters[2] + "/" + parameters[3] + "/" + parameters[4]
+        # print(instance_my)
+        # service = QiskitRuntimeService(channel="ibm_quantum", instance=instance_my)
         # provider = IBMQ.get_provider(hub='ibm-q-psnc', group='internal', project='default')
-        provider = IBMQ.get_provider(hub=parameters[2], group=parameters[3], project=parameters[4])
+        # provider = IBMQ.get_provider(hub=parameters[2], group=parameters[3], project=parameters[4])
+        provider = IBMProvider()
+        
         # self.__backend = provider.get_backend('simulator_statevector')
         self.__backend = provider.get_backend(parameters[5])
         return True
@@ -116,7 +132,7 @@ class LpiqeQiskit(ILpqieImplementation):
         if print_info:
             print('   Circuit is transpiled.\n2. Preparing a job.')
 
-        job = execute(tc, self.__backend, shots=shots)
+        job = self.__backend.run(tc, shots=shots)
         if print_info:
             print('   Job is prepared.\n3. Sending job to execution')
         result = job.result()
@@ -131,3 +147,7 @@ class LpiqeQiskit(ILpqieImplementation):
     @property
     def backend(self):
         return self.__backend
+
+    @property
+    def circuit(self):
+        return self.circuit
