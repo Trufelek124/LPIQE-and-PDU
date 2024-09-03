@@ -64,11 +64,19 @@ class LpiqeReconstructionExecutor:
         if self.__repr.operator_type is ot.TP_UC_ANCILLA_RIGHT or self.__repr.operator_type is ot.TP_ANCILLA_RIGHT:
             q_nr = self.__q_count - 1
         self.__q_circ = self.__ex.set_hgate(self.__q_circ, q_nr)
-        # self.__q_circ = self.__ex.define_measurement(self.__q_circ, range(0, meas_nr), range(0, meas_nr))
+        
+        D2n_1 = np.roll(np.identity(2**self.__q_count), 1, axis=1)
+        
+        meas_nr = int(np.log2(self.__im_size[0])+np.log2(self.__im_size[0]))+1
+        self.__q_circ.h(self.__q_count-1)
+        self.__q_circ.unitary(D2n_1, range(self.__q_count))
+        self.__q_circ.h(self.__q_count-1)
+        self.__q_circ = self.__ex.define_measurement(self.__q_circ, range(0, meas_nr), range(0, meas_nr))
 
     def define_measurement_ext(self, circuit):
         meas_nr = int(np.log2(self.__im_size[0])+np.log2(self.__im_size[0]))+1
         circuit = self.__ex.define_measurement(circuit, range(0, meas_nr), range(0, meas_nr))
+        return circuit
 
 
     def execute(self, shots, print_info=True, print_recon=False):
@@ -85,6 +93,26 @@ class LpiqeReconstructionExecutor:
             raise RuntimeError('Image cannot be reconstructed')
         self.__im_recon = self.__repr.reconstructed_image[0]
         self.__im_diff = abs(self.__im_recon - self.__im_orig)
+
+
+        
+
+    def execute_ext(self, shots, circuit, print_info=True, print_recon=False):
+        """
+        This method executes encoding - reconstruction experiment for one image.
+
+        :param print_recon: if True there is printed measurement eigen-states appearance histogram
+        :param print_info: if True there is printed the information about consecutive steps of quantum computing
+        :param shots: The number of shots to be made on quantum back-end
+        :return: nothing.
+        """
+        self.__repr.results = self.__ex.make_quantum_computation(self.circuit, shots, print_info)
+        if not self.__repr.reconstruct(print_recon):
+            raise RuntimeError('Image cannot be reconstructed')
+        im_recon = self.__repr.reconstructed_image[0]
+        im_diff = abs(im_recon - self.__im_orig)
+
+        return im_recon, im_diff
 
     @property
     def original_image(self):
