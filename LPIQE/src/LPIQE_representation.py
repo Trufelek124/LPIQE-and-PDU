@@ -284,6 +284,10 @@ class LpiqeRepresentation:
 
         :return: True if succeed and False in opposite case
         """
+        self.__width = 16
+        self.__width = 16
+        self.__widthQ = 5
+        self.__heightQ = 5
         if self.__repr_state != RepresentationState.RS_SYSTEM_SAMPLED:
             return False
         img = np.zeros((self.__width, self.__height)).astype(float)
@@ -294,6 +298,7 @@ class LpiqeRepresentation:
                 u = int(result[0:self.__widthQ], 2)
                 v = int(result[self.__widthQ:self.__widthQ + self.__heightQ], 2)
                 x = (2 ** (length+1) / 2) * p0 - 1  # 2**length - normalization factor
+
                 if x < -1:
                     warnings.warn(
                         "The cos(p), p-experimentally determined probability for eigen state |" + result +
